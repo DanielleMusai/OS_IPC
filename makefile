@@ -5,6 +5,7 @@ EXEC = stnc
 SRC = stnc.c
 OBJ = $(SRC:.c=.o)
 
+
 all: $(EXEC)
 
 $(EXEC): $(OBJ)

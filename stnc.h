@@ -4,6 +4,7 @@
 // Constants
 #define MAX_MESSAGE_LENGTH 1024
 
+
 // Function declarations
 int start_server(int port);
 int connect_to_server(char* ip, int port);
