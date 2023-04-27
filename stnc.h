@@ -1,13 +1,19 @@
 #ifndef STNC_H
 #define STNC_H
 
-// Constants
-#define MAX_MESSAGE_LENGTH 1024
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
+#define MAX_MSG_LENGTH 128
 
-// Function declarations
-int start_server(int port);
-int connect_to_server(char* ip, int port);
-void handle_connection(int socket_fd);
+void error(const char *msg);
+void handle_client(int sockfd);
+int main(int argc, char *argv[]);
 
 #endif
