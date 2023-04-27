@@ -7,38 +7,41 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#define MAX_MSG_LENGTH 128
+#define MAX_LENGTH 128
 
 //prints an error message and exits the program in case of an error
 void error(const char *msg) { 
     perror(msg);
     exit(0);
 }
+/*
+handle_client function is designed to handle communication between a client and a server over a network connection.
+The function takes a socket file descriptor (sockfd) as input, 
+and uses it to send and receive messages to/from the other end of the connection.
+*/
 
-//handles the communication between the client and the server
-//receives a socket file descriptor as a parameter and reads from the socket and writes to the socket 
-//in a loop until the message "exit" is received
-void handle_client(int sockfd) { 
-    char buffer[MAX_MSG_LENGTH];
+void handle_client(int sockfd) {
+    char buffer[MAX_LENGTH];
     int n;
 
     while (1) {
-        bzero(buffer, MAX_MSG_LENGTH);
-        fgets(buffer, MAX_MSG_LENGTH, stdin);
-        n = write(sockfd, buffer, strlen(buffer));
-        if (n < 0)
-            error("ERROR writing to socket");
-        if (strcmp(buffer, "exit\n") == 0)
-            break;
-        bzero(buffer, MAX_MSG_LENGTH);
-        n = read(sockfd, buffer, MAX_MSG_LENGTH-1);
-        if (n < 0)
-            error("ERROR reading from socket");
-        printf("%s", buffer);
-        if (strcmp(buffer, "exit\n") == 0)
-            break;
+        bzero(buffer, MAX_LENGTH);  // clear the buffer by setting all bytes to 0
+        fgets(buffer, MAX_LENGTH, stdin);  // read input from the user from standard input and store it in buffer
+        n = write(sockfd, buffer, strlen(buffer));  // write the contents of buffer to the socket
+        if (n < 0)  // if the write operation failed
+            error("ERROR writing to socket");  // print an error message and terminate the program
+        if (strcmp(buffer, "exit\n") == 0)  // if the user entered "exit" command
+            break;  // exit the loop
+        bzero(buffer, MAX_LENGTH);  // clear the buffer again
+        n = read(sockfd, buffer, MAX_LENGTH-1);  // read data from the socket and store it in buffer
+        if (n < 0)  // If the read operation failed
+            error("ERROR reading from socket");  // print an error message and terminate the program
+        printf("%s", buffer);  // print the contents of buffer to the standard output
+        if (strcmp(buffer, "exit\n") == 0)  // if the server sent "exit" command
+            break;  // exit the loop
     }
 }
+
 
 int main(int argc, char *argv[]) {
     int sockfd, portno;

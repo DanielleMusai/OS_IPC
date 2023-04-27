@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#define MAX_MSG_LENGTH 128
+#define MAX_LENGTH 128
 
 void error(const char *msg);
 void handle_client(int sockfd);
