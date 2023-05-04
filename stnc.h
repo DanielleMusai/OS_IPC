@@ -9,10 +9,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-
-#define MAX_LENGTH 128
+#include <pthread.h>
 
 void error(const char *msg);
+void *receive_messages(void *sockfd_ptr);
+void *send_messages(void *sockfd_ptr);
 void handle_client(int sockfd);
 int main(int argc, char *argv[]);
 

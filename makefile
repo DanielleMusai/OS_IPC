@@ -1,18 +1,14 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -pedantic
-LDFLAGS = 
-EXEC = stnc
-SRC = stnc.c
-OBJ = $(SRC:.c=.o)
+CFLAGS = -Wall -Wextra -pedantic -pthread
+OBJ = stnc.o
 
+all: stnc
 
-all: $(EXEC)
+stnc: $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -o stnc
 
-$(EXEC): $(OBJ)
-	$(CC) $(LDFLAGS) $^ -o $@
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+stnc.o: stnc.c stnc.h
+	$(CC) $(CFLAGS) -c stnc.c -o stnc.o
 
 clean:
-	rm -f $(OBJ) $(EXEC)
+	rm -f $(OBJ) stnc

@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,93 +7,151 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <pthread.h>
 
 #define MAX_LENGTH 128
 
-//prints an error message and exits the program in case of an error
-void error(const char *msg) { 
+void error(const char *msg)
+{
     perror(msg);
     exit(0);
 }
-/*
-handle_client function is designed to handle communication between a client and a server over a network connection.
-The function takes a socket file descriptor (sockfd) as input, 
-and uses it to send and receive messages to/from the other end of the connection.
-*/
 
-void handle_client(int sockfd) {
+void *receive_messages(void *sockfd_ptr)
+{
+    int sockfd = *((int *)sockfd_ptr);
     char buffer[MAX_LENGTH];
     int n;
 
-    while (1) {
-        bzero(buffer, MAX_LENGTH);  // clear the buffer by setting all bytes to 0
-        fgets(buffer, MAX_LENGTH, stdin);  // read input from the user from standard input and store it in buffer
-        n = write(sockfd, buffer, strlen(buffer));  // write the contents of buffer to the socket
-        if (n < 0)  // if the write operation failed
-            error("ERROR writing to socket");  // print an error message and terminate the program
-        if (strcmp(buffer, "exit\n") == 0)  // if the user entered "exit" command
-            break;  // exit the loop
-        bzero(buffer, MAX_LENGTH);  // clear the buffer again
-        n = read(sockfd, buffer, MAX_LENGTH-1);  // read data from the socket and store it in buffer
-        if (n < 0)  // If the read operation failed
-            error("ERROR reading from socket");  // print an error message and terminate the program
-        printf("%s", buffer);  // print the contents of buffer to the standard output
-        if (strcmp(buffer, "exit\n") == 0)  // if the server sent "exit" command
-            break;  // exit the loop
+    while (1)
+    {
+        bzero(buffer, MAX_LENGTH);
+        n = read(sockfd, buffer, MAX_LENGTH - 1);
+        if (n > 0)
+        {
+            printf("%s", buffer);
+        }
+        else if (n < 0)
+        {
+            error("ERROR reading from socket");
+        }
+
+        if (strcmp(buffer, "exit\n") == 0)
+        {
+            break;
+        }
+    }
+
+    return NULL;
+}
+
+void *send_messages(void *sockfd_ptr)
+{
+    int sockfd = *((int *)sockfd_ptr);
+    char buffer[MAX_LENGTH];
+    int n;
+
+    while (1)
+    {
+        bzero(buffer, MAX_LENGTH);
+        fgets(buffer, MAX_LENGTH, stdin);
+        n = write(sockfd, buffer, strlen(buffer));
+        if (n < 0)
+        {
+            error("ERROR writing to socket");
+        }
+
+        if (strcmp(buffer, "exit\n") == 0)
+        {
+            break;
+        }
+    }
+
+    return NULL;
+}
+
+/*
+handle_client function is designed to handle communication between a client and a server over a network connection.
+The function takes a socket file descriptor (sockfd) as input,
+and uses it to send and receive messages to/from the other end of the connection.
+*/
+
+void handle_client(int sockfd)
+{
+    pthread_t receive_thread, send_thread;
+
+    if (pthread_create(&receive_thread, NULL, receive_messages, &sockfd) != 0)
+    {
+        error("ERROR creating receive thread");
+    }
+
+    if (pthread_create(&send_thread, NULL, send_messages, &sockfd) != 0)
+    {
+        error("ERROR creating send thread");
+    }
+
+    pthread_detach(receive_thread);
+    pthread_detach(send_thread);
+
+    while (1)
+    {
+        sleep(1);
     }
 }
 
-
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     int sockfd, portno;
     struct sockaddr_in serv_addr;
-  //  struct hostent *server;
+    //  struct hostent *server;
     struct addrinfo hints, *res;
 
-    if (argc < 3) {
-        fprintf(stderr,"usage: %s -s PORT or %s -c IP PORT\n", argv[0], argv[0]);
+    if (argc < 3)
+    {
+        fprintf(stderr, "usage: %s -s PORT or %s -c IP PORT\n", argv[0], argv[0]);
         exit(1);
     }
 
-    if (strcmp(argv[1], "-s") == 0) { // checks if the first argument passed to the program is "-s"
+    if (strcmp(argv[1], "-s") == 0)
+    {                                             // checks if the first argument passed to the program is "-s"
         sockfd = socket(AF_INET, SOCK_STREAM, 0); // a socket is created using the socket() function
-        //The code checks if the socket was successfully created.
-        // If not, an error message is printed and the program exits.
+        // The code checks if the socket was successfully created.
+        //  If not, an error message is printed and the program exits.
         if (sockfd < 0)
             error("ERROR opening socket");
 
-        bzero((char *) &serv_addr, sizeof(serv_addr)); // serv_addr struct is zeroed out using the bzero() function
-        //  The port number is retrieved from the second argument passed to the program 
+        bzero((char *)&serv_addr, sizeof(serv_addr)); // serv_addr struct is zeroed out using the bzero() function
+        //  The port number is retrieved from the second argument passed to the program
         //  and converted to an integer using the atoi() function
-        portno = atoi(argv[2]); 
+        portno = atoi(argv[2]);
         //  The serv_addr struct is set up with the address family (AF_INET), IP address (INADDR_ANY), and port number
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_addr.s_addr = INADDR_ANY;
         serv_addr.sin_port = htons(portno);
 
-        if (bind(sockfd, (struct sockaddr *) &serv_addr,
+        if (bind(sockfd, (struct sockaddr *)&serv_addr,
                  sizeof(serv_addr)) < 0) // the socket is bound to the address and port using the bind() function
             error("ERROR on binding");
 
-        listen(sockfd,5); //  the listen() function is called on the socket to start listening for incoming connections
+        listen(sockfd, 5); //  the listen() function is called on the socket to start listening for incoming connections
 
         int clilen;
         struct sockaddr_in cli_addr;
         clilen = sizeof(cli_addr);
         // calls the accept() function to accept incoming connections. This function blocks until a client connects to the server
         int newsockfd = accept(sockfd,
-                              (struct sockaddr *) &cli_addr,
+                               (struct sockaddr *)&cli_addr,
                                (socklen_t *)&clilen);
-                              
 
         if (newsockfd < 0)
             error("ERROR on accept");
 
         handle_client(newsockfd); //  if a client connects, the handle_client() function is called with the new socket file descriptor
-        close(newsockfd); //  once the handle_client() function returns, the new socket and the original socket are closed using the close()
+        close(newsockfd);         //  once the handle_client() function returns, the new socket and the original socket are closed using the close()
         close(sockfd);
     }
-    else if (strcmp(argv[1], "-c") == 0) {
+    else if (strcmp(argv[1], "-c") == 0)
+    {
         sockfd = socket(AF_INET, SOCK_STREAM, 0); // creates a new socket file descriptor for the client, using the IPv4 protocol and the TCP transport protocol
         if (sockfd < 0)
             error("ERROR opening socket");
@@ -110,7 +169,7 @@ int main(int argc, char *argv[]) {
         serv_addr.sin_family = AF_INET;
         serv_addr.sin_port = portno;
 
-        if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) // connects the client socket to the server socket at the specified address and port number
+        if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) // connects the client socket to the server socket at the specified address and port number
             error("ERROR connecting");
 
         handle_client(sockfd); // handles communication with the server using the newly connected socket
