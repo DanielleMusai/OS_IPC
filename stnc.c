@@ -103,7 +103,6 @@ int main(int argc, char *argv[])
 {
     int sockfd, portno;
     struct sockaddr_in serv_addr;
-    //  struct hostent *server;
     struct addrinfo hints, *res;
 
     if (argc < 3)
@@ -112,8 +111,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    if (strcmp(argv[1], "-s") == 0)
-    {                                             // checks if the first argument passed to the program is "-s"
+    if (strcmp(argv[1], "-s") == 0)    // checks if the first argument passed to the program is "-s"
+    {                                          
         sockfd = socket(AF_INET, SOCK_STREAM, 0); // a socket is created using the socket() function
         // The code checks if the socket was successfully created.
         //  If not, an error message is printed and the program exits.
