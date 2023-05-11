@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <poll.h>
 
 #define MAX_LENGTH 128
 
@@ -78,24 +79,63 @@ and uses it to send and receive messages to/from the other end of the connection
 
 void handle_client(int sockfd)
 {
-    pthread_t receive_thread, send_thread;
+    struct pollfd fds[2];
+    int ret;
+    char buffer[MAX_LENGTH];
 
-    if (pthread_create(&receive_thread, NULL, receive_messages, &sockfd) != 0)
-    {
-        error("ERROR creating receive thread");
-    }
+    // We want to listen to this socket
+    fds[0].fd = sockfd;
+    fds[0].events = POLLIN;
 
-    if (pthread_create(&send_thread, NULL, send_messages, &sockfd) != 0)
-    {
-        error("ERROR creating send thread");
-    }
-
-    pthread_detach(receive_thread);
-    pthread_detach(send_thread);
+    // We also want to listen to user input
+    fds[1].fd = STDIN_FILENO;
+    fds[1].events = POLLIN;
 
     while (1)
     {
-        sleep(1);
+        ret = poll(fds, 2, -1); // Wait indefinitely for some activity
+        if (ret == -1)
+        {
+            perror("poll");
+            exit(EXIT_FAILURE);
+        }
+
+        if (fds[0].revents & POLLIN)
+        {
+            // Handle incoming data, similar to your receive_messages() function
+            bzero(buffer, MAX_LENGTH);
+            int n = read(sockfd, buffer, MAX_LENGTH - 1);
+            if (n > 0)
+            {
+                printf("%s", buffer);
+            }
+            else if (n < 0)
+            {
+                error("ERROR reading from socket");
+            }
+
+            if (strcmp(buffer, "exit\n") == 0)
+            {
+                break;
+            }
+        }
+
+        if (fds[1].revents & POLLIN)
+        {
+            // Handle user input, similar to your send_messages() function
+            bzero(buffer, MAX_LENGTH);
+            fgets(buffer, MAX_LENGTH, stdin);
+            int n = write(sockfd, buffer, strlen(buffer));
+            if (n < 0)
+            {
+                error("ERROR writing to socket");
+            }
+
+            if (strcmp(buffer, "exit\n") == 0)
+            {
+                break;
+            }
+        }
     }
 }
 
