@@ -1,7 +1,4 @@
-/* Keep in mind that this is a high-level skeleton and not a complete solution. You will need to fill in the logic for each function,
-handle errors, and potentially add more code to handle the different communication styles (ipv4, ipv6, mmap, pipe, uds)
-and their parameters (udp, tcp, dgram, stream, filename). */
-
+// performance_test.c
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,36 +13,75 @@ and their parameters (udp, tcp, dgram, stream, filename). */
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/un.h>
-// you may need to include additional headers
+
+#define BUFFER_SIZE 4096
+#define DATA_SIZE 100000000
 
 // Function to generate 100MB of data
-char* generate_data() {
-    // TODO
-}
-
-// Function to compute a checksum of the data
-char* compute_checksum(char* data) {
-    // TODO
+char *generate_data()
+{
+    char *data = malloc(DATA_SIZE);
+    memset(data, 'A', DATA_SIZE);
+    return data;
 }
 
 // Function to transmit data
-void transmit_data(char* data, char* type, char* param, char* ip, int port) {
-    // TODO
+void transmit_data(char *data, char *type, char *param, char *ip, int port)
+{
+    if (strcmp(type, "ipv4") == 0 && strcmp(param, "tcp") == 0)
+    {
+        transmit_ipv4_tcp(data, ip, port);
+    }
+    else if (strcmp(type, "ipv4") == 0 && strcmp(param, "udp") == 0)
+    {
+        transmit_ipv4_udp(data, ip, port);
+    }
+    else if (strcmp(type, "ipv6") == 0 && strcmp(param, "tcp") == 0)
+    {
+        transmit_ipv6_tcp(data, ip, port);
+    }
+    else if (strcmp(type, "ipv6") == 0 && strcmp(param, "udp") == 0)
+    {
+        transmit_ipv6_udp(data, ip, port);
+    }
+    else if (strcmp(type, "uds") == 0 && strcmp(param, "dgram") == 0)
+    {
+        transmit_uds_dgram(data, ip);
+    }
+    else if (strcmp(type, "uds") == 0 && strcmp(param, "stream") == 0)
+    {
+        transmit_uds_stream(data, ip);
+    }
+    else if (strcmp(type, "mmap") == 0)
+    {
+        transmit_mmap(data, ip);
+    }
+    else if (strcmp(type, "pipe") == 0)
+    {
+        transmit_pipe(data, ip);
+    }
+    else
+    {
+        fprintf(stderr, "Invalid type/param combination\n");
+        exit(1);
+    }
 }
 
 // Function to measure time
-long measure_time(struct timeval start, struct timeval end) {
-    // TODO
+long measure_time(struct timeval start, struct timeval end)
+{
+    return (end.tv_sec - start.tv_sec) * 1000 + (end.tv_usec - start.tv_usec) / 1000;
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 6) {
+int main(int argc, char *argv[])
+{
+    if (argc != 6)
+    {
         fprintf(stderr, "usage: %s -c IP PORT -p <type> <param>\n", argv[0]);
         exit(1);
     }
 
-    char* data = generate_data();
-    char* checksum = compute_checksum(data);
+    char *data = generate_data();
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
@@ -54,6 +90,8 @@ int main(int argc, char *argv[]) {
 
     long time_taken = measure_time(start, end);
     printf("%s_%s,%ld\n", argv[4], argv[5], time_taken);
+
+    free(data);
 
     return 0;
 }

@@ -1,6 +1,4 @@
-/* his is a skeleton and not a complete solution. You will need to fill in the logic for each function, handle errors,
-and potentially add more code to handle the different communication styles (ipv4, ipv6, mmap, pipe, uds)
-and their parameters (udp, tcp, dgram, stream, filename). */
+// performance_server.c
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,71 +13,109 @@ and their parameters (udp, tcp, dgram, stream, filename). */
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/un.h>
-// You may need to include additional headers
 
-// Function to receive data
-void receive_data(int sockfd, char* type, char* param) {
-    // TODO
+#define BUFFER_SIZE 4096
+
+void error(const char *msg)
+{
+    perror(msg);
+    exit(1);
 }
 
-// Function to verify checksum of the data
-void verify_checksum(char* data, char* checksum) {
-    // TODO
+// Function to receive data ONLY tcp over IPv4
+char *receive_data(int sockfd)
+{
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 5) {
+void receive_ipv4_tcp(int port)
+{
+    // TODO: Implement IPv4 TCP communication
+}
+
+void receive_ipv4_udp(int port)
+{
+    // TODO: Implement IPv4 UDP communication
+}
+
+void receive_ipv6_tcp(int port)
+{
+    // TODO: Implement IPv6 TCP communication
+}
+
+void receive_ipv6_udp(int port)
+{
+    // TODO: Implement IPv6 UDP communication
+}
+
+void receive_uds_dgram(char *filename)
+{
+    // TODO: Implement Unix Domain Socket Datagram communication
+}
+
+void receive_uds_stream(char *filename)
+{
+    // TODO: Implement Unix Domain Socket Stream communication
+}
+
+void receive_mmap(char *filename)
+{
+    // TODO: Implement memory-mapped file communication
+}
+
+void receive_pipe(char *filename)
+{
+    // TODO: Implement named pipe communication
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc != 5)
+    {
         fprintf(stderr, "usage: %s -s port -p -q\n", argv[0]);
         exit(1);
     }
 
-    int sockfd, portno;
-    struct sockaddr_in serv_addr;
-    struct addrinfo hints, *res;
-    int is_performance_test = 0;
-    int is_quiet_mode = 0;
+    int portno = atoi(argv[2]);
+    char *type = argv[3];
+    char *param = argv[4];
 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-        error("ERROR opening socket");
-
-    bzero((char *)&serv_addr, sizeof(serv_addr));
-    portno = atoi(argv[2]);
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(portno);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-
-    if (strcmp(argv[3], "-p") == 0) {
-        is_performance_test = 1;
+    if (strcmp(type, "ipv4") == 0 && strcmp(param, "tcp") == 0)
+    {
+        receive_ipv4_tcp(portno);
     }
-
-    if (strcmp(argv[4], "-q") == 0) {
-        is_quiet_mode = 1;
+    else if (strcmp(type, "ipv4") == 0 && strcmp(param, "udp") == 0)
+    {
+        receive_ipv4_udp(portno);
     }
-
-    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-        error("ERROR on binding");
-
-    listen(sockfd, 5);
-    int clilen = sizeof(serv_addr);
-
-    int newsockfd = accept(sockfd, (struct sockaddr *)&serv_addr, (socklen_t *)&clilen);
-    if (newsockfd < 0)
-        error("ERROR on accept");
-
-    if (is_performance_test) {
-        char* data = receive_data(newsockfd, argv[3], argv[4]);
-        // In real scenario you should also receive the checksum
-        // and verify it using the verify_checksum function
-        // For simplicity, this part is omitted in this skeleton
-
-        if (!is_quiet_mode) {
-            printf("Received data: %s\n", data);
-        }
+    else if (strcmp(type, "ipv6") == 0 && strcmp(param, "tcp") == 0)
+    {
+        receive_ipv6_tcp(portno);
     }
-
-    close(newsockfd);
-    close(sockfd);
+    else if (strcmp(type, "ipv6") == 0 && strcmp(param, "udp") == 0)
+    {
+        receive_ipv6_udp(portno);
+    }
+    else if (strcmp(type, "uds") == 0 && strcmp(param, "dgram") == 0)
+    {
+        receive_uds_dgram(param);
+    }
+    else if (strcmp(type, "uds") == 0 && strcmp(param, "stream") == 0)
+    {
+        receive_uds_stream(param);
+    }
+    else if (strcmp(type, "mmap") == 0)
+    {
+        receive_mmap(param);
+    }
+    else if (strcmp(type, "pipe") == 0)
+    {
+        receive_pipe(param);
+    }
+    else
+    {
+        fprintf(stderr, "Invalid type/param combination\n");
+        exit(1);
+    }
 
     return 0;
 }
