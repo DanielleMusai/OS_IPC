@@ -25,6 +25,81 @@ char *generate_data()
     return data;
 }
 
+void transmit_ipv4_tcp(char *data, char *ip, int port)
+{
+    // Implementation code for transmitting data over IPv4 TCP
+    printf("Transmitting data over IPv4 TCP\n");
+    printf("Data: %s\n", data);
+    printf("IP: %s\n", ip);
+    printf("Port: %d\n", port);
+    // Additional code for transmitting data over IPv4 TCP
+}
+void transmit_ipv4_udp(char *data, char *ip, int port)
+{
+    // Implementation code for transmitting data over IPv4 UDP
+    printf("Transmitting data over IPv4 UDP\n");
+    printf("Data: %s\n", data);
+    printf("IP: %s\n", ip);
+    printf("Port: %d\n", port);
+    // Additional code for transmitting data over IPv4 UDP
+}
+
+void transmit_ipv6_tcp(char *data, char *ip, int port)
+{
+    // Implementation code for transmitting data over IPv6 TCP
+    printf("Transmitting data over IPv6 TCP\n");
+    printf("Data: %s\n", data);
+    printf("IP: %s\n", ip);
+    printf("Port: %d\n", port);
+    // Additional code for transmitting data over IPv6 TCP
+}
+void transmit_ipv6_udp(char *data, char *ip, int port)
+{
+    // Implementation code for transmitting data over IPv6 UDP
+    printf("Transmitting data over IPv6 UDP\n");
+    printf("Data: %s\n", data);
+    printf("IP: %s\n", ip);
+    printf("Port: %d\n", port);
+    // Additional code for transmitting data over IPv6 UDP
+}
+void transmit_uds_dgram(char *data, char *socket_path)
+{
+    // Implementation code for transmitting data over UDS datagram
+    printf("Transmitting data over UDS datagram\n");
+    printf("Data: %s\n", data);
+    printf("Socket Path: %s\n", socket_path);
+    // Additional code for transmitting data over UDS datagram
+}
+
+
+void transmit_uds_stream(char *data, char *socket_path)
+{
+    // Implementation code for transmitting data over UDS stream
+    printf("Transmitting data over UDS stream\n");
+    printf("Data: %s\n", data);
+    printf("Socket Path: %s\n", socket_path);
+    // Additional code for transmitting data over UDS stream
+}
+
+
+void transmit_mmap(char *data, char *file_path)
+{
+    // Implementation code for transmitting data using memory-mapped files
+    printf("Transmitting data using memory-mapped files\n");
+    printf("Data: %s\n", data);
+    printf("File Path: %s\n", file_path);
+    // Additional code for transmitting data using memory-mapped files
+}
+void transmit_pipe(char *data, char *pipe_name)
+{
+    // Implementation code for transmitting data using pipes
+    printf("Transmitting data using pipes\n");
+    printf("Data: %s\n", data);
+    printf("Pipe Name: %s\n", pipe_name);
+    // Additional code for transmitting data using pipes
+}
+
+
 // Function to transmit data
 void transmit_data(char *data, char *type, char *param, char *ip, int port)
 {
