@@ -497,15 +497,10 @@ void receive_pipe(char *filename)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 5)
-    {
-        fprintf(stderr, "usage: %s -s port -p -q\n", argv[0]);
-        exit(1);
-    }
-
     int portno = atoi(argv[2]);
-    char *type = argv[3];
-    char *param = argv[4];
+    int quite = ((strcmp(argv[4], "-q") == 0) ? 1 : 0);
+    char *type = argv[5];
+    char *param = argv[6];
 
     if (strcmp(type, "ipv4") == 0 && strcmp(param, "tcp") == 0)
     {

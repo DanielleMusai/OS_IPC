@@ -35,6 +35,8 @@
   "C_Cpp_Runner.showCompilationTime": false,
   "files.associations": {
     "stdlib.h": "c",
-    "types.h": "c"
+    "types.h": "c",
+    "poll.h": "c",
+    "netdb.h": "c"
   }
 }

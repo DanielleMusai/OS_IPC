@@ -21,7 +21,7 @@
 char *generate_data()
 {
     char *data = malloc(DATA_SIZE);
-    //memset(data, 'A', DATA_SIZE);
+    memset(data, '0', DATA_SIZE);
     return data;
 }
 

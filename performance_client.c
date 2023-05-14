@@ -21,7 +21,7 @@
 char *generate_data()
 {
     char *data = malloc(DATA_SIZE);
-    memset(data, 'A', DATA_SIZE);
+    memset(data, '0', DATA_SIZE);
     return data;
 }
 
@@ -29,76 +29,168 @@ void transmit_ipv4_tcp(char *data, char *ip, int port)
 {
     // Implementation code for transmitting data over IPv4 TCP
     printf("Transmitting data over IPv4 TCP\n");
-    printf("Data: %s\n", data);
     printf("IP: %s\n", ip);
     printf("Port: %d\n", port);
-    // Additional code for transmitting data over IPv4 TCP
+
+    int sockfd;
+    struct sockaddr_in server_addr;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+
+    inet_pton(AF_INET, ip, &server_addr.sin_addr);
+
+    connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+
+    send(sockfd, data, DATA_SIZE, 0);
+
+    close(sockfd);
+    ;
 }
 void transmit_ipv4_udp(char *data, char *ip, int port)
 {
     // Implementation code for transmitting data over IPv4 UDP
     printf("Transmitting data over IPv4 UDP\n");
-    printf("Data: %s\n", data);
     printf("IP: %s\n", ip);
     printf("Port: %d\n", port);
-    // Additional code for transmitting data over IPv4 UDP
+    int sockfd;
+    struct sockaddr_in server_addr;
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+
+    inet_pton(AF_INET, ip, &server_addr.sin_addr);
+
+    sendto(sockfd, data, DATA_SIZE, 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+
+    close(sockfd);
 }
 
 void transmit_ipv6_tcp(char *data, char *ip, int port)
 {
     // Implementation code for transmitting data over IPv6 TCP
     printf("Transmitting data over IPv6 TCP\n");
-    printf("Data: %s\n", data);
     printf("IP: %s\n", ip);
     printf("Port: %d\n", port);
-    // Additional code for transmitting data over IPv6 TCP
+    
+    int sockfd;
+    struct sockaddr_in6 server_addr;
+
+    sockfd = socket(AF_INET6, SOCK_STREAM, 0);
+
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin6_family = AF_INET6;
+    server_addr.sin6_port = htons(port);
+
+    inet_pton(AF_INET6, ip, &server_addr.sin6_addr);
+
+    connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+
+    send(sockfd, data, DATA_SIZE, 0);
+
+    close(sockfd);
 }
 void transmit_ipv6_udp(char *data, char *ip, int port)
 {
     // Implementation code for transmitting data over IPv6 UDP
     printf("Transmitting data over IPv6 UDP\n");
-    printf("Data: %s\n", data);
     printf("IP: %s\n", ip);
     printf("Port: %d\n", port);
-    // Additional code for transmitting data over IPv6 UDP
+    
+    int sockfd;
+    struct sockaddr_in6 server_addr;
+
+    sockfd = socket(AF_INET6, SOCK_DGRAM, 0);
+
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin6_family = AF_INET6;
+    server_addr.sin6_port = htons(port);
+
+    inet_pton(AF_INET6, ip, &server_addr.sin6_addr);
+
+    sendto(sockfd, data, DATA_SIZE, 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+
+    close(sockfd);
 }
 void transmit_uds_dgram(char *data, char *socket_path)
 {
     // Implementation code for transmitting data over UDS datagram
     printf("Transmitting data over UDS datagram\n");
-    printf("Data: %s\n", data);
     printf("Socket Path: %s\n", socket_path);
-    // Additional code for transmitting data over UDS datagram
-}
+    int sockfd;
+    struct sockaddr_un server_addr;
 
+    sockfd = socket(AF_UNIX, SOCK_DGRAM, 0);
+
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sun_family = AF_UNIX;
+    strncpy(server_addr.sun_path, socket_path, sizeof(server_addr.sun_path) - 1);
+
+    sendto(sockfd, data, DATA_SIZE, 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+
+    close(sockfd);
+}
 
 void transmit_uds_stream(char *data, char *socket_path)
 {
     // Implementation code for transmitting data over UDS stream
     printf("Transmitting data over UDS stream\n");
-    printf("Data: %s\n", data);
     printf("Socket Path: %s\n", socket_path);
-    // Additional code for transmitting data over UDS stream
-}
+    int sockfd;
+    struct sockaddr_un server_addr;
 
+    sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sun_family = AF_UNIX;
+    strncpy(server_addr.sun_path, socket_path, sizeof(server_addr.sun_path) - 1);
+
+    connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+
+    send(sockfd, data, DATA_SIZE, 0);
+
+    close(sockfd);
+}
 
 void transmit_mmap(char *data, char *file_path)
 {
     // Implementation code for transmitting data using memory-mapped files
     printf("Transmitting data using memory-mapped files\n");
-    printf("Data: %s\n", data);
     printf("File Path: %s\n", file_path);
-    // Additional code for transmitting data using memory-mapped files
+    int fd;
+    char *addr;
+
+    fd = open(file_path, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    ftruncate(fd, DATA_SIZE);
+
+    addr = mmap(NULL, DATA_SIZE, PROT_WRITE, MAP_SHARED, fd, 0);
+
+    memcpy(addr, data, DATA_SIZE);
+
+    munmap(addr, DATA_SIZE);
+    close(fd);
 }
 void transmit_pipe(char *data, char *pipe_name)
 {
     // Implementation code for transmitting data using pipes
     printf("Transmitting data using pipes\n");
-    printf("Data: %s\n", data);
     printf("Pipe Name: %s\n", pipe_name);
-    // Additional code for transmitting data using pipes
-}
+    int fd;
 
+    mkfifo(pipe_name, 0666);
+
+    fd = open(pipe_name, O_WRONLY);
+
+    write(fd, data, DATA_SIZE);
+
+    close(fd);
+}
 
 // Function to transmit data
 void transmit_data(char *data, char *type, char *param, char *ip, int port)
@@ -155,8 +247,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "usage: %s -c 1 IP 2 PORT 3 -p <type> 5 <param> 6\n", argv[0]);
         exit(1);
     }
-
-    
 
     char *data = generate_data();
 

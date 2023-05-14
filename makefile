@@ -1,26 +1,22 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic -pthread
-OBJ = stnc.o performance_test.o performance_server.o
+OBJ = stnc.o performance_client.o performance_server.o
 
-all: stnc performance_test performance_server
+.PHONY: all clean
+
+all: stnc performance_client performance_server
 
 stnc: stnc.o
-	$(CC) $(CFLAGS) stnc.o -o stnc
+	$(CC) $(CFLAGS) $^ -o $@
 
-performance_test: performance_test.o
-	$(CC) $(CFLAGS) performance_test.o -o performance_test
+performance_client: performance_client.o
+	$(CC) $(CFLAGS) $^ -o $@
 
 performance_server: performance_server.o
-	$(CC) $(CFLAGS) performance_server.o -o performance_server
+	$(CC) $(CFLAGS) $^ -o $@
 
-stnc.o: stnc.c stnc.h
-	$(CC) $(CFLAGS) -c stnc.c -o stnc.o
-
-performance_test.o: performance_test.c
-	$(CC) $(CFLAGS) -c performance_test.c -o performance_test.o
-
-performance_server.o: performance_server.c
-	$(CC) $(CFLAGS) -c performance_server.c -o performance_server.o
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) stnc performance_test performance_server
+	rm -f $(OBJ) stnc performance_client performance_server
