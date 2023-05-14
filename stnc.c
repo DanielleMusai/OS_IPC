@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <poll.h>
 #include <arpa/inet.h>
+#include "stnc.h"
 
 #define MAX_LENGTH 128
 #define BUFFER_SIZE 4096
@@ -106,10 +107,7 @@ int main(int argc, char *argv[])
 
     is_server = strcmp(argv[1], "-s") == 0;
 
-    if (strcmp(argv[3], "-p") == 0)
-    {
-        perf_mode = 1;
-    }
+    perf_mode = is_server ? (strcmp(argv[3], "-p") == 0) : (strcmp(argv[4], "-p") == 0);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
@@ -157,8 +155,6 @@ int main(int argc, char *argv[])
             printf("Received type: %s\n", type);
             printf("Received param: %s\n", param);
 
-            // ... Continue processing based on 'type' and 'param'
-
             close(newsockfd);
             close(sockfd);
         }
@@ -174,15 +170,21 @@ int main(int argc, char *argv[])
             // Connect to the server
             if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
                 error("ERROR connecting");
+            printf("Sent type: %s\n", type);
+            printf("Sent param: %s\n", param);
 
             // Send the 'type' and 'param' parameters to the server
-            write(sockfd, type, strlen(type) + 1);
-            write(sockfd, param, strlen(param) + 1);
-
+            int ret = write(sockfd, type, strlen(type) + 1);
+            if (ret == -1)
+                perror("write type error");
+            sleep(1);
+            ret = write(sockfd, param, strlen(param) + 1);
+            if (ret == -1)
+                perror("write param error");
             close(sockfd);
         }
     }
-    else
+    else // Chat mode
     {
         if (is_server)
         {
@@ -192,7 +194,7 @@ int main(int argc, char *argv[])
                 error("ERROR on binding");
 
             listen(sockfd, 5);
-            int clilen = sizeof(serv_addr);
+            socklen_t clilen = sizeof(serv_addr);
 
             int newsockfd = accept(sockfd, (struct sockaddr *)&serv_addr, (socklen_t *)&clilen);
             if (newsockfd < 0)
@@ -215,6 +217,7 @@ int main(int argc, char *argv[])
                 error("ERROR connecting");
 
             handle_client(sockfd);
+            freeaddrinfo(res);
             close(sockfd);
         }
     }
@@ -224,19 +227,20 @@ int main(int argc, char *argv[])
         int exec_argc;
         if (is_server)
         {
-            if (type == NULL || param == NULL || argc != 7)
+            for (int i = 0; i < argc; i++)
             {
-                fprintf(stderr, "usage: %s -s =1 port =2 -p=3 -q=4\n type =5 param =6", argv[0]);
+                printf("argv[%d]: %s\n", i, argv[i]);
+            }
+            if (type == NULL || param == NULL || argc < 3 || argc > 7)
+            {
+                fprintf(stderr, "usage: %s -s =1 port =2 -p=3 -q=4 type =5 param =6\n", argv[0]);
                 exit(1);
             }
-            int quite = 0;
-            if (strcmp(argv[4], "-q") == 0)
-            {
+            int quite = (argc > 3 && strcmp(argv[4], "-q") == 0) ? 1 : 0;
+            if (quite)
                 printf("Server is running in quiet mode\n");
-                quite = 1;
-            }
+            char *exec_argv[argc + 2 + quite];
 
-            char *exec_argv[argc + 2 + quite + 1];
             exec_argc = argc + 2 + quite;
             exec_argv[0] = "performance_server"; // assuming "performance_test" is the executable name
             for (int i = 1; i < argc; i++)
@@ -255,31 +259,43 @@ int main(int argc, char *argv[])
                 exec_argv[4] = type;
                 exec_argv[5] = param;
             }
-
-            exec_argv[exec_argc + 1] = NULL;                                               // the argument list must be terminated by a NULL pointer
-            execv("/home/agassi/OperatingSystems/OS_IPC/performance_client.c", exec_argv); // replace "path_to_performance_test" with the actual path
-            perror("execv");                                                               // execv returns only if there is an error
+            printf("%d\n", exec_argc);
+            exec_argv[exec_argc] = NULL; // the argument list must be terminated by a NULL pointer
+            for (int i = 0; i < exec_argc; i++)
+            {
+                printf("exec_argv[%d]: %s\n", i, exec_argv[i]);
+            }
+            /* printf("%s\n", exec_argv[exec_argc - 1]); */
+            execv("/home/agassi/OperatingSystems/OS_IPC/performance_server", exec_argv); // replace "path_to_performance_test" with the actual path
+            perror("execv");                                                             // execv returns only if there is an error
             return 1;
         }
-        else /// NOT CHECKED
+        else // is client
         {
+            for (int i = 0; i < argc; i++)
+            {
+                printf("argv[%d]: %s\n", i, argv[i]);
+            }
             if (argc != 7)
             {
-                fprintf(stderr, "usage: %s -s =1 port =2 -p=3 -q=4\n type =5 param =6", argv[0]);
+                fprintf(stderr, "usage: %s -s =1 port =2 ip=3 -p=4 type =5 param =6\n", argv[0]);
                 exit(1);
             }
-            char *exec_argv[argc + 1];
+            char *exec_argv[argc];
             exec_argv[0] = "performance_client"; // assuming "performance_test" is the executable name
             for (int i = 1; i < argc; i++)
             {
                 printf("argv[%d] = %s\n", i, argv[i]);
                 exec_argv[i] = argv[i];
             }
-            exec_argv[argc + 1] = NULL;                                                    // the argument list must be terminated by a NULL pointer
-            execv("/home/agassi/OperatingSystems/OS_IPC/performance_client.c", exec_argv); // replace "path_to_performance_test" with the actual path
-            perror("execv");                                                               // execv returns only if there is an error
+            exec_argv[argc] = NULL;
+            // the argument list must be terminated by a NULL pointer
+            execv("/home/agassi/OperatingSystems/OS_IPC/performance_client", exec_argv); // replace "path_to_performance_test" with the actual path
+            perror("execv");                                                             // execv returns only if there is an error
             return 1;
         }
+        free(type);
+        free(param);
     }
 
     return 0;

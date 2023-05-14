@@ -2,13 +2,37 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "(gdb) Launch",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/stnc",
+      "args": ["-c", "127.0.0.1", "1235" ,"-p" ,"ipv4", "tcp", "-q"],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+          {
+              "description": "Enable pretty-printing for gdb",
+              "text": "-enable-pretty-printing",
+              "ignoreFailures": true
+          },
+          {
+              "description": "Set Disassembly Flavor to Intel",
+              "text": "-gdb-set disassembly-flavor intel",
+              "ignoreFailures": true
+          }
+      ]
+    },
+    {
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
-      "args": ["-s", "1234", "-p"],
+      "args": ["-s", "1235", "-p"],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/agassi/OperatingSystems/OS_IPC/",
+      "cwd": "/home/agassi/OperatingSystems/OS_IPC",
       "program": "/home/agassi/OperatingSystems/OS_IPC/stnc",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
@@ -19,6 +43,7 @@
           "ignoreFailures": true
         }
       ]
-    }
+    },
+
   ]
 }

@@ -78,7 +78,7 @@ void transmit_ipv6_tcp(char *data, char *ip, int port)
     printf("Transmitting data over IPv6 TCP\n");
     printf("IP: %s\n", ip);
     printf("Port: %d\n", port);
-    
+
     int sockfd;
     struct sockaddr_in6 server_addr;
 
@@ -102,7 +102,7 @@ void transmit_ipv6_udp(char *data, char *ip, int port)
     printf("Transmitting data over IPv6 UDP\n");
     printf("IP: %s\n", ip);
     printf("Port: %d\n", port);
-    
+
     int sockfd;
     struct sockaddr_in6 server_addr;
 
@@ -242,11 +242,6 @@ long measure_time(struct timeval start, struct timeval end)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 6)
-    {
-        fprintf(stderr, "usage: %s -c 1 IP 2 PORT 3 -p <type> 5 <param> 6\n", argv[0]);
-        exit(1);
-    }
 
     char *data = generate_data();
 
@@ -258,7 +253,7 @@ int main(int argc, char *argv[])
     gettimeofday(&end, NULL);
 
     long time_taken = measure_time(start, end);
-    printf("%s_%s,%ld\n", argv[4], argv[5], time_taken);
+    printf("%s_%s,%ld\n", argv[5], argv[6], time_taken);
 
     free(data);
 
