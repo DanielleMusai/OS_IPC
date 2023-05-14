@@ -13,7 +13,6 @@
 #define MAX_LENGTH 128
 #define BUFFER_SIZE 4096
 
-
 void error(const char *msg)
 {
     perror(msg);
@@ -106,7 +105,7 @@ int main(int argc, char *argv[])
 
     is_server = strcmp(argv[1], "-s") == 0;
 
-    if (argc < 4 && strcmp(argv[4], "-p") == 0)
+    if (argc > 3 && strcmp(argv[4], "-p") == 0)
     {
         perf_mode = 1;
     }
