@@ -1,4 +1,4 @@
-// performance_test.c
+// performance_client.c
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,15 +152,19 @@ int main(int argc, char *argv[])
 {
     if (argc != 6)
     {
-        fprintf(stderr, "usage: %s -c IP PORT -p <type> <param>\n", argv[0]);
+        fprintf(stderr, "usage: %s -c 1 IP 2 PORT 3 -p <type> 5 <param> 6\n", argv[0]);
         exit(1);
     }
+
+    
 
     char *data = generate_data();
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
-    transmit_data(data, argv[4], argv[5], argv[2], atoi(argv[3]));
+
+    transmit_data(data, argv[5], argv[6], argv[2], atoi(argv[3]));
+
     gettimeofday(&end, NULL);
 
     long time_taken = measure_time(start, end);
