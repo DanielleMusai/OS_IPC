@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <pthread.h>
 #include <poll.h>
+#include <arpa/inet.h>
 
 #define MAX_LENGTH 128
 #define BUFFER_SIZE 4096
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
 
     is_server = strcmp(argv[1], "-s") == 0;
 
-    if (argc > 3 && strcmp(argv[4], "-p") == 0)
+    if (strcmp(argv[3], "-p") == 0)
     {
         perf_mode = 1;
     }
