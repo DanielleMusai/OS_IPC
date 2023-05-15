@@ -1,12 +1,12 @@
-// performance_server.c
+// performance.c
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <arpa/inet.h>
@@ -15,7 +15,79 @@
 #include <sys/un.h>
 
 #define BUFFER_SIZE 4096
+#define DATA_SIZE 100000000
 
+// Function to generate 100MB of data
+char *generate_data()
+{
+    char *data = malloc(DATA_SIZE);
+    memset(data, '0', DATA_SIZE);
+    return data;
+}
+
+/// Helper function to print transmission details
+void print_transmission_details(char *type, char *param, char *data, char *ip, int port)
+{
+    printf("Transmitting data over %s %s\n", type, param);
+    printf("Data: %s\n", data);
+    printf("IP: %s\n", ip);
+    printf("Port: %d\n", port);
+}
+
+// Function to transmit data
+void transmit_data(char *data, char *type, char *param, char *ip, int port)
+{
+    if (strcmp(type, "ipv4") == 0 && strcmp(param, "tcp") == 0)
+    {
+        print_transmission_details(type, param, data, ip, port);
+        // Implementation code for transmitting data over IPv4 TCP
+    }
+    else if (strcmp(type, "ipv4") == 0 && strcmp(param, "udp") == 0)
+    {
+        print_transmission_details(type, param, data, ip, port);
+        // Implementation code for transmitting data over IPv4 UDP
+    }
+    else if (strcmp(type, "ipv6") == 0 && strcmp(param, "tcp") == 0)
+    {
+        print_transmission_details(type, param, data, ip, port);
+        // Implementation code for transmitting data over IPv6 TCP
+    }
+    else if (strcmp(type, "ipv6") == 0 && strcmp(param, "udp") == 0)
+    {
+        print_transmission_details(type, param, data, ip, port);
+        // Implementation code for transmitting data over IPv6 UDP
+    }
+    else if (strcmp(type, "uds") == 0 && strcmp(param, "dgram") == 0)
+    {
+        print_transmission_details(type, param, data, ip, port);
+        // Implementation code for transmitting data over UDS datagram
+    }
+    else if (strcmp(type, "uds") == 0 && strcmp(param, "stream") == 0)
+    {
+        print_transmission_details(type, param, data, ip, port);
+        // Implementation code for transmitting data over UDS stream
+    }
+    else if (strcmp(type, "mmap") == 0)
+    {
+        print_transmission_details(type, param, data, ip, port);
+        // Implementation code for transmitting data using mmap
+    }
+    else if (strcmp(type, "pipe") == 0)
+    {
+        print_transmission_details(type, param, data, ip, port);
+        // Implementation code for transmitting data using named pipe
+    }
+    else
+    {
+        fprintf(stderr, "Invalid type/param combination\n");
+        exit(1);
+    }
+}
+// Function to measure time
+long measure_time(struct timeval start, struct timeval end)
+{
+    return (end.tv_sec - start.tv_sec) * 1000 + (end.tv_usec - start.tv_usec) / 1000;
+}
 void error(const char *msg)
 {
     perror(msg);
@@ -63,7 +135,8 @@ char *receive_data(int sockfd)
     return data;
 }
 
-void receive_ipv4_tcp(int port, int quite)
+
+void receive_ipv4_tcp(int port)
 {
     int sockfd, newsockfd;
     struct sockaddr_in serverAddr, clientAddr;
@@ -94,7 +167,7 @@ void receive_ipv4_tcp(int port, int quite)
     {
         error("Error on listening");
     }
-    
+
     printf("Server listening on port %d\n", port);
 
     while (1)
@@ -107,14 +180,13 @@ void receive_ipv4_tcp(int port, int quite)
         {
             error("Error on accepting connection");
         }
-        
+
         printf("Client connected\n");
 
         // Receive data from the client
         receivedData = receive_data(newsockfd);
 
-        if(!quite)
-            printf("Received data:\n%s\n", receivedData);
+        printf("Received data:\n%s\n", receivedData);
 
         // Free the received data memory
         free(receivedData);
@@ -127,7 +199,8 @@ void receive_ipv4_tcp(int port, int quite)
     close(sockfd);
 }
 
-void receive_ipv4_udp(int port, int quite)
+
+void receive_ipv4_udp(int port)
 {
     int sockfd;
     struct sockaddr_in serverAddr, clientAddr;
@@ -154,8 +227,7 @@ void receive_ipv4_udp(int port, int quite)
         error("Error on binding");
     }
 
-    if(!quite)
-        printf("Server listening on port %d\n", port);
+    printf("Server listening on port %d\n", port);
 
     while (1)
     {
@@ -171,15 +243,14 @@ void receive_ipv4_udp(int port, int quite)
         // Null-terminate the received data
         buffer[bytesReceived] = '\0';
 
-        if(!quite)
-            printf("Received data from %s:%d:\n%s\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
+        printf("Received data from %s:%d:\n%s\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), buffer);
     }
 
     // Close the socket
     close(sockfd);
 }
 
-void receive_ipv6_tcp(int port, int quite)
+void receive_ipv6_tcp(int port)
 {
     int sockfd, newsockfd;
     struct sockaddr_in6 serverAddr, clientAddr;
@@ -229,8 +300,7 @@ void receive_ipv6_tcp(int port, int quite)
         // Receive data from the client
         receivedData = receive_data(newsockfd);
 
-        if(!quite)
-            printf("Received data:\n%s\n", receivedData);
+        printf("Received data:\n%s\n", receivedData);
 
         // Free the received data memory
         free(receivedData);
@@ -243,7 +313,8 @@ void receive_ipv6_tcp(int port, int quite)
     close(sockfd);
 }
 
-void receive_ipv6_udp(int port, int quite)
+
+void receive_ipv6_udp(int port)
 {
     int sockfd;
     struct sockaddr_in6 serverAddr, clientAddr;
@@ -288,15 +359,16 @@ void receive_ipv6_udp(int port, int quite)
 
         char clientAddrStr[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET6, &(clientAddr.sin6_addr), clientAddrStr, INET6_ADDRSTRLEN);
-        if(!quite)
-            printf("Received data from [%s]:%d:\n%s\n", clientAddrStr, ntohs(clientAddr.sin6_port), buffer);
+
+        printf("Received data from [%s]:%d:\n%s\n", clientAddrStr, ntohs(clientAddr.sin6_port), buffer);
     }
 
     // Close the socket
     close(sockfd);
 }
 
-void receive_uds_dgram(char *filename, int quite)
+
+void receive_uds_dgram(char *filename)
 {
     int sockfd;
     struct sockaddr_un serverAddr, clientAddr;
@@ -340,7 +412,7 @@ void receive_uds_dgram(char *filename, int quite)
 
         // Null-terminate the received data
         buffer[bytesReceived] = '\0';
-    if(!quite)    
+
         printf("Received data:\n%s\n", buffer);
     }
 
@@ -351,7 +423,7 @@ void receive_uds_dgram(char *filename, int quite)
     unlink(filename);
 }
 
-void receive_uds_stream(char *filename, int quite)
+void receive_uds_stream(char *filename)
 {
     int sockfd, newsockfd;
     struct sockaddr_un serverAddr, clientAddr;
@@ -384,8 +456,8 @@ void receive_uds_stream(char *filename, int quite)
     {
         error("Error on listening");
     }
-    if(!quite)
-        printf("Server listening on Unix Domain Socket Stream: %s\n", filename);
+
+    printf("Server listening on Unix Domain Socket Stream: %s\n", filename);
 
     while (1)
     {
@@ -402,8 +474,8 @@ void receive_uds_stream(char *filename, int quite)
 
         // Receive data from the client
         receivedData = receive_data(newsockfd);
-        if(!quite)
-            printf("Received data:\n%s\n", receivedData);
+
+        printf("Received data:\n%s\n", receivedData);
 
         // Free the received data memory
         free(receivedData);
@@ -419,7 +491,8 @@ void receive_uds_stream(char *filename, int quite)
     unlink(filename);
 }
 
-void receive_mmap(char *filename, int quite)
+
+void receive_mmap(char *filename)
 {
     int fd;
     struct stat fileStat;
@@ -448,8 +521,7 @@ void receive_mmap(char *filename, int quite)
     }
 
     // Print the contents of the memory-mapped file
-    if(!quite)
-        printf("Received data from memory-mapped file:\n%s\n", mappedData);
+    printf("Received data from memory-mapped file:\n%s\n", mappedData);
 
     // Unmap the file from memory
     if (munmap(mappedData, fileSize) < 0)
@@ -461,7 +533,7 @@ void receive_mmap(char *filename, int quite)
     close(fd);
 }
 
-void receive_pipe(char *filename, int quite)
+void receive_pipe(char *filename)
 {
     int fd;
     char buffer[BUFFER_SIZE];
@@ -487,8 +559,8 @@ void receive_pipe(char *filename, int quite)
 
         // Null-terminate the received data
         buffer[bytesRead] = '\0';
-        if(!quite)
-            printf("Received data:\n%s\n", buffer);
+
+        printf("Received data:\n%s\n", buffer);
     }
 
     // Close the named pipe
@@ -497,64 +569,65 @@ void receive_pipe(char *filename, int quite)
 
 int main(int argc, char *argv[])
 {
-    (void)argc;
-    printf("Server started\n");
-    int portno = atoi(argv[2]);
-    char *type;
-    char *param;
-    int quite = ((strcmp(argv[4], "-q") == 0) ? 1 : 0);
-    if (quite == 1)
+    if (argc < 2)
     {
-        printf("quite mode\n");
-        type = argv[5];
-        param = argv[6];
-    }
-    else
-    {
-        type = argv[4];
-        param = argv[5];
+        fprintf(stderr, "Usage: %s -c IP PORT -p <type> <param>\n", argv[0]);
+        return 1;
     }
 
-    printf("in pref server\n");
-  
+    // Parse the command-line arguments
+    char *ip = NULL;
+    int port = 0;
+    char *type = NULL;
+    char *param = NULL;
 
-    if (strcmp(type, "ipv4") == 0 && strcmp(param, "tcp") == 0)
+    for (int i = 1; i < argc; i++)
     {
-        receive_ipv4_tcp(portno, quite);
+        if (strcmp(argv[i], "-c") == 0)
+        {
+            if (i + 2 >= argc)
+            {
+                fprintf(stderr, "Invalid command-line arguments\n");
+                return 1;
+            }
+            ip = argv[i + 1];
+            port = atoi(argv[i + 2]);
+        }
+        else if (strcmp(argv[i], "-p") == 0)
+        {
+            if (i + 2 >= argc)
+            {
+                fprintf(stderr, "Invalid command-line arguments\n");
+                return 1;
+            }
+            type = argv[i + 1];
+            param = argv[i + 2];
+        }
     }
-    else if (strcmp(type, "ipv4") == 0 && strcmp(param, "udp") == 0)
+
+    if (ip == NULL || port == 0 || type == NULL || param == NULL)
     {
-        receive_ipv4_udp(portno, quite);
+        fprintf(stderr, "Invalid command-line arguments\n");
+        return 1;
     }
-    else if (strcmp(type, "ipv6") == 0 && strcmp(param, "tcp") == 0)
-    {
-        receive_ipv6_tcp(portno, quite);
-    }
-    else if (strcmp(type, "ipv6") == 0 && strcmp(param, "udp") == 0)
-    {
-        receive_ipv6_udp(portno, quite);
-    }
-    else if (strcmp(type, "uds") == 0 && strcmp(param, "dgram") == 0)
-    {
-        receive_uds_dgram(param, quite);
-    }
-    else if (strcmp(type, "uds") == 0 && strcmp(param, "stream") == 0)
-    {
-        receive_uds_stream(param, quite);
-    }
-    else if (strcmp(type, "mmap") == 0)
-    {
-        receive_mmap(param, quite);
-    }
-    else if (strcmp(type, "pipe") == 0)
-    {
-        receive_pipe(param, quite);
-    }
-    else
-    {
-        fprintf(stderr, "Invalid type/param combination\n");
-        exit(1);
-    }
+
+    // Generate the data
+    char *data = generate_data();
+
+    // Transmit the data and measure the time
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
+    transmit_data(data, type, param, ip, port);
+    gettimeofday(&end, NULL);
+
+    // Calculate the time taken
+    long time_taken = measure_time(start, end);
+
+    // Report the result to stdOut
+    printf("%s_%s,%ld\n", type, param, time_taken);
+
+    // Free the allocated memory
+    free(data);
 
     return 0;
 }

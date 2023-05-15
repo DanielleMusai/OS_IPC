@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <arpa/inet.h>
 
 void error(const char *msg);
 void *receive_messages(void *sockfd_ptr);
