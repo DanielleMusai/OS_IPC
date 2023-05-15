@@ -497,6 +497,7 @@ void receive_pipe(char *filename, int quite)
 
 int main(int argc, char *argv[])
 {
+    (void)argc;
     printf("Server started\n");
     int portno = atoi(argv[2]);
     char *type;
@@ -515,10 +516,7 @@ int main(int argc, char *argv[])
     }
 
     printf("in pref server\n");
-    for (int i = 0; i < argc; i++)
-    {
-        printf("argv[%d]: %s\n", i, argv[i]);
-    }
+  
 
     if (strcmp(type, "ipv4") == 0 && strcmp(param, "tcp") == 0)
     {

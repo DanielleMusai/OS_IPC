@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(portno);
 
-    if (perf_mode)
+    if (perf_mode) // Performance mode
     {
         // Server side
         if (is_server)
@@ -243,11 +243,7 @@ int main(int argc, char *argv[])
 
             exec_argc = argc + 2 + quite;
             exec_argv[0] = "performance_server"; // assuming "performance_test" is the executable name
-            for (int i = 1; i < argc; i++)
-            {
-                printf("argv[%d] = %s\n", i, argv[i]);
-                exec_argv[i] = argv[i];
-            }
+
             if (quite)
             {
                 exec_argv[4] = "-q";
@@ -260,38 +256,21 @@ int main(int argc, char *argv[])
                 exec_argv[5] = param;
             }
             printf("%d\n", exec_argc);
-            exec_argv[exec_argc] = NULL; // the argument list must be terminated by a NULL pointer
-            for (int i = 0; i < exec_argc; i++)
-            {
-                printf("exec_argv[%d]: %s\n", i, exec_argv[i]);
-            }
-            /* printf("%s\n", exec_argv[exec_argc - 1]); */
+            exec_argv[exec_argc] = NULL;                                                 // the argument list must be terminated by a NULL pointer
             execv("/home/agassi/OperatingSystems/OS_IPC/performance_server", exec_argv); // replace "path_to_performance_test" with the actual path
             perror("execv");                                                             // execv returns only if there is an error
             return 1;
         }
         else // is client
         {
-            for (int i = 0; i < argc; i++)
-            {
-                printf("argv[%d]: %s\n", i, argv[i]);
-            }
             if (argc != 7)
             {
                 fprintf(stderr, "usage: %s -s =1 port =2 ip=3 -p=4 type =5 param =6\n", argv[0]);
                 exit(1);
             }
-            char *exec_argv[argc];
-            exec_argv[0] = "performance_client"; // assuming "performance_test" is the executable name
-            for (int i = 1; i < argc; i++)
-            {
-                printf("argv[%d] = %s\n", i, argv[i]);
-                exec_argv[i] = argv[i];
-            }
-            exec_argv[argc] = NULL;
-            // the argument list must be terminated by a NULL pointer
-            execv("/home/agassi/OperatingSystems/OS_IPC/performance_client", exec_argv); // replace "path_to_performance_test" with the actual path
-            perror("execv");                                                             // execv returns only if there is an error
+            argv[0] = "performance_client"; 
+            execv("/home/agassi/OperatingSystems/OS_IPC/performance_client", argv);
+            perror("execv"); // execv returns only if there is an error
             return 1;
         }
         free(type);
@@ -300,28 +279,4 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-/*
-// If "-p" is present in the command-line arguments
-    if (p_index != -1) {
-        if (is_server){
-            char* exec_argv[argc - p_index + 1];
-            exec_argv[0] = "performance_client";  // assuming "performance_test" is the executable name
-            for (int i = p_index; i < argc; i++) {
-                exec_argv[i - p_index + 1] = argv[i];
-            }
-            exec_argv[argc - p_index + 1] = NULL;  // the argument list must be terminated by a NULL pointer
 
-            execv("path_to_performance_test", exec_argv);  // replace "path_to_performance_test" with the actual path
-            perror("execv");  // execv returns only if there is an error
-            return 1;
-        }
-    } */
-
-/*
-mission:
-V 1. rewrite performance_client.c according performence_server.c - Danny
-2. put the execution of both client and server in stnc main() - Elhai
-V 3. implement sending to the server TYPE and PARMETER - Danny
-4. add -q to the server to quit the server - Elhai
-
-*/
